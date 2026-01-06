@@ -7,20 +7,27 @@ import { Button } from "@/components/ui/button";
 import { PaletteSelector } from "@/components/palette-selector";
 import { TemplateSelector } from "@/components/template-selector";
 import { WallpaperCanvas, type WallpaperCanvasHandle } from "@/components/wallpaper-canvas";
+import { PaperCanvas, type PaperCanvasHandle } from "@/components/paper-canvas";
 import { palettes, getPaletteById } from "@/lib/palettes";
-import { templates, getTemplateById } from "@/lib/templates";
+import { templates, getTemplateById, isP5Template, isPaperTemplate } from "@/lib/templates";
+import type { P5Template, PaperTemplate } from "@/lib/templates";
 
 export function WallpaperGenerator() {
   const [selectedPaletteId, setSelectedPaletteId] = useState(palettes[0].id);
   const [selectedTemplateId, setSelectedTemplateId] = useState(templates[0].id);
-  const canvasRef = useRef<WallpaperCanvasHandle>(null);
+  const p5CanvasRef = useRef<WallpaperCanvasHandle>(null);
+  const paperCanvasRef = useRef<PaperCanvasHandle>(null);
 
   const selectedPalette = getPaletteById(selectedPaletteId);
   const selectedTemplate = getTemplateById(selectedTemplateId);
   const colors = selectedPalette?.colors ?? [];
 
   const handleDownload = () => {
-    canvasRef.current?.downloadImage();
+    if (selectedTemplate && isP5Template(selectedTemplate)) {
+      p5CanvasRef.current?.downloadImage();
+    } else {
+      paperCanvasRef.current?.downloadImage();
+    }
   };
 
   if (!selectedTemplate) return null;
@@ -33,7 +40,19 @@ export function WallpaperGenerator() {
       </div>
 
       <div className="w-full max-w-4xl overflow-hidden rounded-xl border shadow-lg">
-        <WallpaperCanvas ref={canvasRef} colors={colors} template={selectedTemplate} />
+        {isP5Template(selectedTemplate) ? (
+          <WallpaperCanvas
+            ref={p5CanvasRef}
+            colors={colors}
+            template={selectedTemplate as P5Template}
+          />
+        ) : isPaperTemplate(selectedTemplate) ? (
+          <PaperCanvas
+            ref={paperCanvasRef}
+            colors={colors}
+            template={selectedTemplate as PaperTemplate}
+          />
+        ) : null}
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-4">

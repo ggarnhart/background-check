@@ -1,9 +1,10 @@
-import type { WallpaperTemplate } from "./types";
+import type { P5Template } from "./types";
 
-export const circleGrid: WallpaperTemplate = {
+export const circleGrid: P5Template = {
   id: "circle-grid",
   name: "Circle Grid",
   description: "8x8 grid of circles with one unique accent circle",
+  renderer: "p5",
   draw: (g, colors) => {
     const w = g.width;
     const h = g.height;

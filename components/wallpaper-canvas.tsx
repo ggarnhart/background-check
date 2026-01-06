@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from "react";
 import type p5Type from "p5";
-import type { WallpaperTemplate } from "@/lib/templates";
+import type { P5Template } from "@/lib/templates";
 
 export interface WallpaperCanvasHandle {
   downloadImage: () => void;
@@ -10,7 +10,7 @@ export interface WallpaperCanvasHandle {
 
 interface WallpaperCanvasProps {
   colors: string[];
-  template: WallpaperTemplate;
+  template: P5Template;
   className?: string;
 }
 
@@ -41,16 +41,20 @@ export const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, WallpaperCanvas
       if (!containerRef.current) return;
 
       let p5Instance: p5Type | null = null;
+      let isCancelled = false;
 
       // Dynamic import for p5 (needs browser environment)
       import("p5").then((p5Module) => {
+        // Guard against React Strict Mode double-mount
+        if (isCancelled || !containerRef.current) return;
+
         const p5Constructor = p5Module.default;
 
         const sketch = (p: p5Type) => {
           p.setup = () => {
             // Create display canvas (responsive)
             const container = containerRef.current;
-            if (!container) return;
+            if (!container || isCancelled) return;
 
             const displayWidth = container.clientWidth;
             const displayHeight = (displayWidth * EXPORT_HEIGHT) / EXPORT_WIDTH;
@@ -70,10 +74,11 @@ export const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, WallpaperCanvas
           };
         };
 
-        p5Instance = new p5Constructor(sketch, containerRef.current!);
+        p5Instance = new p5Constructor(sketch, containerRef.current);
       });
 
       return () => {
+        isCancelled = true;
         graphicsRef.current?.remove();
         p5Instance?.remove();
         p5Ref.current = null;

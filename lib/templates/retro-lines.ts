@@ -1,10 +1,11 @@
-import type { WallpaperTemplate } from "./types";
+import type { P5Template } from "./types";
 import { drawRotatedStripes } from "./utils";
 
-export const retroLines: WallpaperTemplate = {
+export const retroLines: P5Template = {
   id: "retro-lines",
   name: "Retro Lines",
   description: "Classic diagonal stripes with larger end colors",
+  renderer: "p5",
   draw: (g, colors) => {
     if (colors.length < 3) return;
 

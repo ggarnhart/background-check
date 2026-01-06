@@ -1,10 +1,11 @@
-import type { WallpaperTemplate } from "./types";
+import type { P5Template } from "./types";
 import { drawRotatedStripes } from "./utils";
 
-export const equalStripes: WallpaperTemplate = {
+export const equalStripes: P5Template = {
   id: "equal-stripes",
   name: "Equal Stripes",
   description: "Equal width diagonal stripes using all colors",
+  renderer: "p5",
   draw: (g, colors) => {
     if (colors.length === 0) return;
 

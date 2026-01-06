@@ -1,9 +1,10 @@
-import type { WallpaperTemplate } from "./types";
+import type { P5Template } from "./types";
 
-export const verticalStripes: WallpaperTemplate = {
+export const verticalStripes: P5Template = {
   id: "vertical-stripes",
   name: "Vertical Stripes",
   description: "5 equal width vertical stripes",
+  renderer: "p5",
   draw: (g, colors) => {
     if (colors.length === 0) return;
 

@@ -1,15 +1,17 @@
 import type p5 from "p5";
-import type { WallpaperTemplate } from "./types";
+import type { P5Template } from "./types";
 import { getLightness } from "./utils";
 
 /**
  * Creates smooth, flowing wave shapes inspired by macOS wallpapers.
  * Layers organic bezier curves from opposing corners with ultra-smooth edges.
+ * Note: This is the p5.js version. See flowing-waves-paper.ts for smoother Paper.js version.
  */
-export const flowingWaves: WallpaperTemplate = {
+export const flowingWaves: P5Template = {
   id: "flowing-waves",
-  name: "Flowing Waves",
+  name: "Flowing Waves (p5)",
   description: "Organic, layered waves flowing from opposite corners",
+  renderer: "p5",
   draw: (g, colors) => {
     if (colors.length < 3) return;
 
