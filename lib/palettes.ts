@@ -6,6 +6,20 @@ export interface ColorPalette {
 
 export const palettes: ColorPalette[] = [
   {
+    id: "macos-waves",
+    name: "macOS Waves",
+    colors: [
+      "#E8F1FB", // Light blue-white background
+      "#D35400", // Deep orange
+      "#E67E22", // Bright orange
+      "#F5B041", // Light orange
+      "#1A5276", // Dark blue
+      "#2874A6", // Medium blue
+      "#5DADE2", // Sky blue
+      "#85C1E9", // Light blue
+    ],
+  },
+  {
     id: "retro-sunset",
     name: "Retro Sunset",
     colors: [

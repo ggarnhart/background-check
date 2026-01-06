@@ -87,11 +87,12 @@ export const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, WallpaperCanvas
     }, [draw]);
 
     const downloadImage = useCallback(() => {
+      const p5 = p5Ref.current;
       const graphics = graphicsRef.current;
-      if (!graphics) return;
+      if (!p5 || !graphics) return;
 
-      // Save the graphics buffer directly
-      graphics.save(`wallpaper-${template.id}-${Date.now()}.png`);
+      // Save the graphics buffer using p5's save method
+      p5.save(graphics, `wallpaper-${template.id}-${Date.now()}.png`);
     }, [template.id]);
 
     useImperativeHandle(ref, () => ({
