@@ -1,0 +1,55 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { Download } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { PaletteSelector } from "@/components/palette-selector";
+import { TemplateSelector } from "@/components/template-selector";
+import { WallpaperCanvas, type WallpaperCanvasHandle } from "@/components/wallpaper-canvas";
+import { palettes, getPaletteById } from "@/lib/palettes";
+import { templates, getTemplateById } from "@/lib/templates";
+
+export function WallpaperGenerator() {
+  const [selectedPaletteId, setSelectedPaletteId] = useState(palettes[0].id);
+  const [selectedTemplateId, setSelectedTemplateId] = useState(templates[0].id);
+  const canvasRef = useRef<WallpaperCanvasHandle>(null);
+
+  const selectedPalette = getPaletteById(selectedPaletteId);
+  const selectedTemplate = getTemplateById(selectedTemplateId);
+  const colors = selectedPalette?.colors ?? [];
+
+  const handleDownload = () => {
+    canvasRef.current?.downloadImage();
+  };
+
+  if (!selectedTemplate) return null;
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-8 p-8">
+      <div className="flex flex-col items-center gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight">background-check</h1>
+        <p className="text-muted-foreground text-sm">Generate 4K wallpapers from color palettes</p>
+      </div>
+
+      <div className="w-full max-w-4xl overflow-hidden rounded-xl border shadow-lg">
+        <WallpaperCanvas ref={canvasRef} colors={colors} template={selectedTemplate} />
+      </div>
+
+      <div className="flex flex-wrap items-center justify-center gap-4">
+        <TemplateSelector
+          value={selectedTemplateId}
+          onValueChange={setSelectedTemplateId}
+        />
+        <PaletteSelector
+          value={selectedPaletteId}
+          onValueChange={setSelectedPaletteId}
+        />
+        <Button onClick={handleDownload} size="lg">
+          <Download className="mr-2 h-4 w-4" />
+          Download 4K
+        </Button>
+      </div>
+    </div>
+  );
+}
