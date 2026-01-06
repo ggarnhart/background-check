@@ -1,5 +1,5 @@
 import type { WallpaperTemplate } from "./types";
-import { drawDiagonalStripe, getLightness } from "./utils";
+import { drawRotatedStripes, getLightness } from "./utils";
 
 export const retroStripes: WallpaperTemplate = {
   id: "retro-stripes",
@@ -16,21 +16,16 @@ export const retroStripes: WallpaperTemplate = {
     const accentColor = sortedByLightness[0];
     const mainColors = sortedByLightness.slice(1, 5);
 
-    const accentWidth = 0.03;
-    const mainWidth = (1 - accentWidth * (mainColors.length - 1)) / mainColors.length;
-
-    let position = 0;
+    // Build stripes: main colors with thin accents between
+    const stripes: { color: string; size: number }[] = [];
 
     mainColors.forEach((color, index) => {
-      // Main color stripe
-      drawDiagonalStripe(g, position, position + mainWidth, color, "tl-br");
-      position += mainWidth;
-
-      // Accent stripe (except after last)
+      stripes.push({ color, size: 3 }); // Main stripe
       if (index < mainColors.length - 1) {
-        drawDiagonalStripe(g, position, position + accentWidth, accentColor, "tl-br");
-        position += accentWidth;
+        stripes.push({ color: accentColor, size: 0.3 }); // Thin accent
       }
     });
+
+    drawRotatedStripes(g, stripes, "tl-br");
   },
 };

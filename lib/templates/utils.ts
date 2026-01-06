@@ -1,77 +1,51 @@
 import type p5 from "p5";
 
-// Get points where a diagonal line intersects the canvas edges
-export function getDiagonalLinePoints(
-  width: number,
-  height: number,
-  t: number,
-  direction: "bl-tr" | "tl-br"
-): { x: number; y: number }[] {
-  const points: { x: number; y: number }[] = [];
+/**
+ * Draw diagonal stripes using rotation - much simpler than polygon math.
+ * Stripes extend way past canvas bounds and get clipped naturally.
+ */
+export function drawRotatedStripes(
+  g: p5.Graphics,
+  stripes: { color: string; size: number }[],
+  direction: "tl-br" | "bl-tr"
+) {
+  const w = g.width;
+  const h = g.height;
+
+  // Calculate the diagonal length
+  const diagonal = Math.sqrt(w * w + h * h);
+
+  // Angle of the diagonal
+  const angle = Math.atan2(h, w);
+
+  // Total size units
+  const totalSize = stripes.reduce((sum, s) => sum + s.size, 0);
+
+  g.push();
+  g.noStroke();
+
+  // Translate to center, rotate, then draw centered stripes
+  g.translate(w / 2, h / 2);
 
   if (direction === "tl-br") {
-    // t=0 at top-left corner, t=1 at bottom-right corner
-    const c = 2 * t;
-
-    const leftY = c * height;
-    if (leftY >= 0 && leftY <= height) points.push({ x: 0, y: leftY });
-
-    const topX = c * width;
-    if (topX >= 0 && topX <= width) points.push({ x: topX, y: 0 });
-
-    const rightY = (c - 1) * height;
-    if (rightY >= 0 && rightY <= height) points.push({ x: width, y: rightY });
-
-    const bottomX = (c - 1) * width;
-    if (bottomX >= 0 && bottomX <= width) points.push({ x: bottomX, y: height });
+    g.rotate(angle);
   } else {
-    // bl-tr: t=0 at bottom-left, t=1 at top-right
-    const c = 2 * t - 1;
-
-    const leftY = -c * height;
-    if (leftY >= 0 && leftY <= height) points.push({ x: 0, y: leftY });
-
-    const bottomX = (c + 1) * width;
-    if (bottomX >= 0 && bottomX <= width) points.push({ x: bottomX, y: height });
-
-    const rightY = (1 - c) * height;
-    if (rightY >= 0 && rightY <= height) points.push({ x: width, y: rightY });
-
-    const topX = c * width;
-    if (topX >= 0 && topX <= width) points.push({ x: topX, y: 0 });
+    g.rotate(-angle);
   }
 
-  // Sort points by angle from center for proper polygon winding
-  if (points.length > 2) {
-    const cx = points.reduce((sum, p) => sum + p.x, 0) / points.length;
-    const cy = points.reduce((sum, p) => sum + p.y, 0) / points.length;
-    points.sort((a, b) => Math.atan2(a.y - cy, a.x - cx) - Math.atan2(b.y - cy, b.x - cx));
-  }
+  // Draw stripes centered around origin
+  // Total width = diagonal, so start at -diagonal/2
+  let position = -diagonal / 2;
 
-  return points;
-}
+  stripes.forEach(({ color, size }) => {
+    const stripeWidth = (size / totalSize) * diagonal;
+    g.fill(color);
+    // Tall rectangle to ensure full coverage
+    g.rect(position, -diagonal, stripeWidth, diagonal * 2);
+    position += stripeWidth;
+  });
 
-// Draw a diagonal stripe between two t values
-export function drawDiagonalStripe(
-  g: p5.Graphics,
-  t1: number,
-  t2: number,
-  color: string,
-  direction: "bl-tr" | "tl-br"
-) {
-  const line1 = getDiagonalLinePoints(g.width, g.height, t1, direction);
-  const line2 = getDiagonalLinePoints(g.width, g.height, t2, direction);
-  const points = [...line1, ...line2.reverse()];
-
-  if (points.length < 3) return;
-
-  g.fill(color);
-  g.noStroke();
-  g.beginShape();
-  for (const p of points) {
-    g.vertex(p.x, p.y);
-  }
-  g.endShape(g.CLOSE);
+  g.pop();
 }
 
 // Estimate perceived lightness from hex color (0-1)

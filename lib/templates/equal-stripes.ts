@@ -1,5 +1,5 @@
 import type { WallpaperTemplate } from "./types";
-import { drawDiagonalStripe } from "./utils";
+import { drawRotatedStripes } from "./utils";
 
 export const equalStripes: WallpaperTemplate = {
   id: "equal-stripes",
@@ -8,11 +8,7 @@ export const equalStripes: WallpaperTemplate = {
   draw: (g, colors) => {
     if (colors.length === 0) return;
 
-    const numColors = colors.length;
-    colors.forEach((color, index) => {
-      const start = index / numColors;
-      const end = (index + 1) / numColors;
-      drawDiagonalStripe(g, start, end, color, "bl-tr");
-    });
+    const stripes = colors.map((color) => ({ color, size: 1 }));
+    drawRotatedStripes(g, stripes, "bl-tr");
   },
 };
