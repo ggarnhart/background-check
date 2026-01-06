@@ -12,7 +12,7 @@ export const retroLines: WallpaperTemplate = {
     // First and last get size 2, middle colors get size 1
     const stripes = colors.map((color, index) => ({
       color,
-      size: index === 0 || index === colors.length - 1 ? 2 : 1,
+      size: index === 0 || index === colors.length - 1 ? 3.5 : 1,
     }));
 
     drawRotatedStripes(g, stripes, "tl-br");
