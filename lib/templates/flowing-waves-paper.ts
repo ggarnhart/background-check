@@ -1,5 +1,11 @@
-import type { PaperTemplate, PaperScope } from "./types";
+import type { PaperTemplate, PaperScope, WaveSettings } from "./types";
 import { getLightness } from "./utils";
+
+// Default wave settings
+const DEFAULT_WAVE_SETTINGS: WaveSettings = {
+  waveCount: 4,
+  amplitude: 60,
+};
 
 /**
  * Creates smooth, flowing wave shapes using Paper.js.
@@ -11,7 +17,9 @@ export const flowingWavesPaper: PaperTemplate = {
   name: "Flowing Waves",
   description: "Ultra-smooth organic waves using Paper.js",
   renderer: "paper",
-  draw: (paper, width, height, colors) => {
+  supportsWaveSettings: true,
+  draw: (paper, width, height, colors, waveSettings) => {
+    const settings = waveSettings ?? DEFAULT_WAVE_SETTINGS;
     if (colors.length < 3) return;
 
     // Sort colors by lightness
@@ -50,11 +58,6 @@ export const flowingWavesPaper: PaperTemplate = {
     warmColors.sort((a, b) => getLightness(a) - getLightness(b));
     coolColors.sort((a, b) => getLightness(a) - getLightness(b));
 
-    // Debug: log what colors we're using
-    console.log("Background:", bgColor);
-    console.log("Warm colors:", warmColors);
-    console.log("Cool colors:", coolColors);
-
     // Draw background (this creates the diagonal "strip")
     const bg = new paper.Path.Rectangle(
       new paper.Point(0, 0),
@@ -62,11 +65,14 @@ export const flowingWavesPaper: PaperTemplate = {
     );
     bg.fillColor = new paper.Color(bgColor);
 
+    // Generate wave points based on settings
+    const wavePoints = generateWavePoints(settings.waveCount, settings.amplitude);
+
     // Draw warm waves (top-left corner, radiating toward top-left)
-    drawCornerWaves(paper, warmColors, width, height, "top-left");
+    drawCornerWaves(paper, warmColors, width, height, "top-left", wavePoints);
 
     // Draw cool waves (bottom-right corner, radiating toward bottom-right)
-    drawCornerWaves(paper, coolColors, width, height, "bottom-right");
+    drawCornerWaves(paper, coolColors, width, height, "bottom-right", wavePoints);
   },
 };
 
@@ -96,32 +102,53 @@ const getHue = (hex: string): number => {
   return hue;
 };
 
+interface WavePoint {
+  x: number;
+  amp: number;
+}
+
+/**
+ * Generate wave control points dynamically based on count and amplitude.
+ */
+const generateWavePoints = (waveCount: number, amplitudePercent: number): WavePoint[] => {
+  const points: WavePoint[] = [];
+  const ampScale = amplitudePercent / 100;
+
+  // Generate points from x=1.05 (right edge) to x=-0.05 (left edge)
+  // Each wave needs 2 points: a peak and a trough
+  const totalPoints = waveCount * 2 + 1;
+
+  for (let i = 0; i <= totalPoints; i++) {
+    const x = 1.05 - (i / totalPoints) * 1.1; // From 1.05 to -0.05
+
+    // Alternate between low amp (peak toward corner) and high amp (trough toward center)
+    const isEven = i % 2 === 0;
+    const baseAmp = isEven ? 0.02 : 0.12;
+
+    // Add some variation based on position
+    const variation = Math.sin((i / totalPoints) * Math.PI) * 0.04;
+    const amp = (baseAmp + variation) * ampScale;
+
+    points.push({ x, amp });
+  }
+
+  return points;
+};
+
 const drawCornerWaves = (
   paper: PaperScope,
   colors: string[],
   w: number,
   h: number,
-  corner: "top-left" | "bottom-right"
+  corner: "top-left" | "bottom-right",
+  wavePoints: WavePoint[]
 ) => {
   if (colors.length === 0) return;
 
   colors.forEach((color, index) => {
-    drawWavyCornerFill(paper, color, w, h, corner, index, colors.length);
+    drawWavyCornerFill(paper, color, w, h, corner, index, colors.length, wavePoints);
   });
 };
-
-// Shared wave shape - x positions and amplitude offsets
-// Waves go from right edge (x=1.0) to left edge (x=-0.05)
-const WAVE_POINTS = [
-  { x: 1.0, amp: 0 },
-  { x: 0.85, amp: 0.08 },   // dip
-  { x: 0.7, amp: 0.02 },    // rise
-  { x: 0.55, amp: 0.12 },   // dip
-  { x: 0.4, amp: 0.05 },    // rise
-  { x: 0.25, amp: 0.15 },   // dip
-  { x: 0.1, amp: 0.08 },    // rise
-  { x: -0.05, amp: 0.18 },  // final dip
-];
 
 /**
  * Draw a wavy-edged fill that covers a corner.
@@ -135,7 +162,8 @@ const drawWavyCornerFill = (
   h: number,
   corner: "top-left" | "bottom-right",
   layerIndex: number,
-  totalLayers: number
+  totalLayers: number,
+  wavePoints: WavePoint[]
 ) => {
   // Offset increases for each layer, pushing wave edge toward center
   // More layers = tighter spacing to fit them all
@@ -150,9 +178,9 @@ const drawWavyCornerFill = (
     path.add(new paper.Point(-w * 0.1, -h * 0.1));
     path.add(new paper.Point(w * 1.1, -h * 0.1));
 
-    // Wavy edge using shared wave shape
-    const baseY = 0.38; // Base distance from top
-    for (const pt of WAVE_POINTS) {
+    // Wavy edge using generated wave points
+    const baseY = 0.40; // Base distance from top (closer to center = smaller white strip)
+    for (const pt of wavePoints) {
       path.add(new paper.Point(w * pt.x, h * (baseY + pt.amp - offset)));
     }
 
@@ -165,11 +193,11 @@ const drawWavyCornerFill = (
     path.add(new paper.Point(w * 1.1, h * 1.1));
     path.add(new paper.Point(-w * 0.1, h * 1.1));
 
-    // Wavy edge using shared wave shape (reversed order: left to right)
+    // Wavy edge using generated wave points (reversed order: left to right)
     // Same amplitude direction as top-left so waves align vertically
-    const baseY = 0.62; // Base distance from top
-    for (let i = WAVE_POINTS.length - 1; i >= 0; i--) {
-      const pt = WAVE_POINTS[i];
+    const baseY = 0.50; // Base distance from top
+    for (let i = wavePoints.length - 1; i >= 0; i--) {
+      const pt = wavePoints[i];
       path.add(new paper.Point(w * pt.x, h * (baseY + pt.amp + offset)));
     }
 

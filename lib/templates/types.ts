@@ -4,6 +4,12 @@ import type paper from "paper";
 // Paper.js scope type
 export type PaperScope = typeof paper;
 
+// Wave settings for Paper.js wave templates
+export interface WaveSettings {
+  waveCount: number;
+  amplitude: number;
+}
+
 // Base template properties
 interface BaseTemplate {
   id: string;
@@ -20,7 +26,14 @@ export interface P5Template extends BaseTemplate {
 // Paper.js template
 export interface PaperTemplate extends BaseTemplate {
   renderer: "paper";
-  draw: (scope: PaperScope, width: number, height: number, colors: string[]) => void;
+  supportsWaveSettings?: boolean;
+  draw: (
+    scope: PaperScope,
+    width: number,
+    height: number,
+    colors: string[],
+    waveSettings?: WaveSettings
+  ) => void;
 }
 
 // Union type for all templates

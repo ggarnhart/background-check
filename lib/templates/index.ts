@@ -1,4 +1,4 @@
-export type { WallpaperTemplate, P5Template, PaperTemplate, PaperScope } from "./types";
+export type { WallpaperTemplate, P5Template, PaperTemplate, PaperScope, WaveSettings } from "./types";
 export { isP5Template, isPaperTemplate } from "./types";
 
 import { retroStripes } from "./retro-stripes";

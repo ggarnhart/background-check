@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useCallback, forwardRef, useImperativeHandle, useState } from "react";
-import type { PaperTemplate } from "@/lib/templates";
+import type { PaperTemplate, WaveSettings } from "@/lib/templates";
 
 export interface PaperCanvasHandle {
   downloadImage: () => void;
@@ -10,6 +10,7 @@ export interface PaperCanvasHandle {
 interface PaperCanvasProps {
   colors: string[];
   template: PaperTemplate;
+  waveSettings?: WaveSettings;
   className?: string;
 }
 
@@ -17,7 +18,7 @@ const EXPORT_WIDTH = 3840;
 const EXPORT_HEIGHT = 2160;
 
 export const PaperCanvas = forwardRef<PaperCanvasHandle, PaperCanvasProps>(
-  function PaperCanvas({ colors, template, className }, ref) {
+  function PaperCanvas({ colors, template, waveSettings, className }, ref) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isReady, setIsReady] = useState(false);
 
@@ -36,13 +37,13 @@ export const PaperCanvas = forwardRef<PaperCanvasHandle, PaperCanvasProps>(
       // Clear previous content
       paper.project.clear();
 
-      // Call the template's draw function
-      template.draw(paper, EXPORT_WIDTH, EXPORT_HEIGHT, colors);
+      // Call the template's draw function with optional wave settings
+      template.draw(paper, EXPORT_WIDTH, EXPORT_HEIGHT, colors, waveSettings);
 
       // Render
       paper.view.update();
       setIsReady(true);
-    }, [colors, template]);
+    }, [colors, template, waveSettings]);
 
     useEffect(() => {
       draw();

@@ -8,19 +8,22 @@ import { PaletteSelector } from "@/components/palette-selector";
 import { TemplateSelector } from "@/components/template-selector";
 import { WallpaperCanvas, type WallpaperCanvasHandle } from "@/components/wallpaper-canvas";
 import { PaperCanvas, type PaperCanvasHandle } from "@/components/paper-canvas";
+import { WaveSettings, defaultWaveSettings } from "@/components/wave-settings";
 import { palettes, getPaletteById } from "@/lib/palettes";
 import { templates, getTemplateById, isP5Template, isPaperTemplate } from "@/lib/templates";
-import type { P5Template, PaperTemplate } from "@/lib/templates";
+import type { P5Template, PaperTemplate, WaveSettings as WaveSettingsType } from "@/lib/templates";
 
 export function WallpaperGenerator() {
   const [selectedPaletteId, setSelectedPaletteId] = useState(palettes[0].id);
   const [selectedTemplateId, setSelectedTemplateId] = useState(templates[0].id);
+  const [waveSettings, setWaveSettings] = useState<WaveSettingsType>(defaultWaveSettings);
   const p5CanvasRef = useRef<WallpaperCanvasHandle>(null);
   const paperCanvasRef = useRef<PaperCanvasHandle>(null);
 
   const selectedPalette = getPaletteById(selectedPaletteId);
   const selectedTemplate = getTemplateById(selectedTemplateId);
   const colors = selectedPalette?.colors ?? [];
+  const showWaveSettings = selectedTemplate && isPaperTemplate(selectedTemplate) && selectedTemplate.supportsWaveSettings;
 
   const handleDownload = () => {
     if (selectedTemplate && isP5Template(selectedTemplate)) {
@@ -51,6 +54,7 @@ export function WallpaperGenerator() {
             ref={paperCanvasRef}
             colors={colors}
             template={selectedTemplate as PaperTemplate}
+            waveSettings={waveSettings}
           />
         ) : null}
       </div>
@@ -69,6 +73,10 @@ export function WallpaperGenerator() {
           Download 4K
         </Button>
       </div>
+
+      {showWaveSettings && (
+        <WaveSettings values={waveSettings} onChange={setWaveSettings} />
+      )}
     </div>
   );
 }
