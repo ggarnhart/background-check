@@ -41,7 +41,7 @@ export function WallpaperGenerator() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-8 p-8">
       <div className="flex flex-col items-center gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">background-check</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Background Check</h1>
         <p className="text-muted-foreground text-sm">Generate 4K wallpapers from color palettes</p>
       </div>
 
