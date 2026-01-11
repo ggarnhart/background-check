@@ -4,6 +4,8 @@ export interface ColorPalette {
   colors: string[];
 }
 
+const CUSTOM_PALETTE_KEY = 'backgroundcheck-custom-palette';
+
 export const palettes: ColorPalette[] = [
   {
     id: "macos-waves",
@@ -71,5 +73,50 @@ export const palettes: ColorPalette[] = [
 ];
 
 export function getPaletteById(id: string): ColorPalette | undefined {
+  if (id === 'custom') {
+    return getCustomPalette();
+  }
   return palettes.find((p) => p.id === id);
+}
+
+export function getCustomPalette(): ColorPalette | undefined {
+  if (typeof window === 'undefined') return undefined;
+
+  try {
+    const stored = localStorage.getItem(CUSTOM_PALETTE_KEY);
+    if (stored) {
+      const colors = JSON.parse(stored);
+      if (Array.isArray(colors) && colors.length > 0) {
+        return {
+          id: 'custom',
+          name: 'Custom Palette',
+          colors,
+        };
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load custom palette:', error);
+  }
+
+  return undefined;
+}
+
+export function saveCustomPalette(colors: string[]): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    localStorage.setItem(CUSTOM_PALETTE_KEY, JSON.stringify(colors));
+  } catch (error) {
+    console.error('Failed to save custom palette:', error);
+  }
+}
+
+export function deleteCustomPalette(): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    localStorage.removeItem(CUSTOM_PALETTE_KEY);
+  } catch (error) {
+    console.error('Failed to delete custom palette:', error);
+  }
 }
