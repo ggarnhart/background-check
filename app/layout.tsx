@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "background-check",
+  title: "Background Check",
   description: "Generate 4K wallpapers from color palettes",
 };
 
