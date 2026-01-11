@@ -1,0 +1,161 @@
+name: Take Issue Resolver
+
+on:
+  issues:
+    types: [opened, labeled]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to resolve'
+        required: true
+        type: number
+      model:
+        description: 'Claude model to use'
+        required: false
+        default: 'sonnet'
+        type: choice
+        options:
+          - sonnet
+          - opus
+
+# Ensure only one Claude Code instance runs per issue at a time
+concurrency:
+  group: take-issue-${{ github.event.issue.number || inputs.issue_number }}
+  cancel-in-progress: false
+
+jobs:
+  resolve-issue:
+    # Run when:
+    # - workflow_dispatch (manual trigger)
+    # - issue labeled with 'take-issue'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'take-issue')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get issue details (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        id: issue_dispatch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ inputs.issue_number }}
+            });
+            core.setOutput('number', issue.number);
+            core.setOutput('title', issue.title);
+            core.setOutput('body', issue.body || '');
+
+      - name: Set issue outputs
+        id: issue
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "number=${{ steps.issue_dispatch.outputs.number }}" >> $GITHUB_OUTPUT
+            echo "title=${{ steps.issue_dispatch.outputs.title }}" >> $GITHUB_OUTPUT
+          else
+            echo "number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+            echo "title=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Determine model args
+        id: model
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            MODEL="${{ inputs.model }}"
+          else
+            MODEL="sonnet"
+          fi
+          echo "args=--model $MODEL --max-turns 50 --dangerously-skip-permissions" >> $GITHUB_OUTPUT
+
+      - name: Run Claude Code to resolve issue
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            A user has reported an issue that needs to be resolved. Please analyze it and implement a solution.
+
+            ## Your Task
+            1. **Understand the Issue**: Read the issue title, body, and any attached screenshots carefully.
+            2. **Analyze the Codebase**: Explore the relevant parts of the codebase to understand the context.
+            3. **Ask Clarifying Questions**: If the issue is unclear or you need more information, leave a comment on the issue asking for clarification.
+            4. **Plan the Implementation**: Once you understand the requirements, plan the changes needed.
+            5. **Implement the Solution**:
+               - Create a new branch named 'take-issue / issue - ${ { steps.issue.outputs.number } } -fix'
+               - Make the necessary code changes
+               - Commit your changes with clear, descriptive commit messages
+               - Reference the issue number in commits (e.g., "Fixes #${{ steps.issue.outputs.number }}")
+            6. **Open a Pull Request**: When your implementation is ready for review:
+               - Open a PR from your branch to the main branch
+               - Link the PR to the issue using "Closes #${{ steps.issue.outputs.number }}" in the PR description
+               - Provide a clear summary of the changes made
+
+            ## Guidelines
+            - Follow the existing code style and conventions in the repository
+            - Write clean, maintainable code
+            - If you're unsure about something, ask in the issue comments rather than making assumptions
+
+            ## Issue Details
+            - **Number**: #${{ steps.issue.outputs.number }}
+            - **Title**: ${{ steps.issue.outputs.title }}
+          claude_args: ${{ steps.model.outputs.args }}
+
+  handle-issue-comment:
+    # Run when someone replies on an issue with 'take-issue' label
+    if: |
+      github.event_name == 'issue_comment' &&
+      github.event.action == 'created' &&
+      !github.event.issue.pull_request &&
+      contains(github.event.issue.labels.*.name, 'take-issue')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code on comment response
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You previously asked a question on this issue and received a response. Please continue working on the implementation.
+
+            ## Context
+            - Review the entire issue conversation to understand the context
+            - The user has provided additional information in response to your questions
+            - Continue with your implementation based on this new information
+
+            ## Your Task
+            1. Read and understand the new information provided
+            2. If you still need clarification, ask follow-up questions
+            3. If you have enough information, proceed with the implementation:
+               - Create or continue working on branch 'take - issue / issue - ${ { github.event.issue.number } } -fix'
+               - Make the necessary code changes
+               - Commit your changes
+               - Open a PR when ready, linking it to issue #${{ github.event.issue.number }}
+
+            ## Issue Details
+            - **Number**: #${{ github.event.issue.number }}
+            - **Title**: ${{ github.event.issue.title }}
+          claude_args: "--model sonnet --max-turns 50 --dangerously-skip-permissions"
