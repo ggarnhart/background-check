@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Download } from "lucide-react";
+import { Download, MessageCirclePlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PaletteSelector } from "@/components/palette-selector";
@@ -12,6 +12,7 @@ import { WaveSettings, defaultWaveSettings } from "@/components/wave-settings";
 import { palettes, getPaletteById } from "@/lib/palettes";
 import { templates, getTemplateById, isP5Template, isPaperTemplate } from "@/lib/templates";
 import type { P5Template, PaperTemplate, WaveSettings as WaveSettingsType } from "@/lib/templates";
+import { useTakeIssue } from "takeissue";
 
 export function WallpaperGenerator() {
   const [selectedPaletteId, setSelectedPaletteId] = useState(palettes[0].id);
@@ -24,6 +25,8 @@ export function WallpaperGenerator() {
   const selectedTemplate = getTemplateById(selectedTemplateId);
   const colors = selectedPalette?.colors ?? [];
   const showWaveSettings = selectedTemplate && isPaperTemplate(selectedTemplate) && selectedTemplate.supportsWaveSettings;
+
+  const { openTakeIssue } = useTakeIssue();
 
   const handleDownload = () => {
     if (selectedTemplate && isP5Template(selectedTemplate)) {
@@ -71,6 +74,10 @@ export function WallpaperGenerator() {
         <Button onClick={handleDownload} size="lg">
           <Download className="mr-2 h-4 w-4" />
           Download 4K
+        </Button>
+        <Button onClick={openTakeIssue} size="lg" variant="outline">
+          <MessageCirclePlus className="mr-2 h-4 w-4" />
+          Feedback
         </Button>
       </div>
 

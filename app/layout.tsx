@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
+import { TakeIssueProvider } from "takeissue";
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +30,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <TakeIssueProvider
+          apiKey={process.env.NEXT_PUBLIC_TAKE_ISSUE_API_KEY ?? ''}
+        >
+          {children}
+        </TakeIssueProvider>
       </body>
     </html>
   );
