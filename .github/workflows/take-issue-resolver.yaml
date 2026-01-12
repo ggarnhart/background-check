@@ -109,6 +109,7 @@ jobs:
             - Write clean, maintainable code
             - If you're unsure about something, ask in the issue comments rather than making assumptions
             - Though reading data is fine, do not, under any circumstances, enact data deletion or modification.
+            - Make sure you use the correct Package Manager for the project. Check what lockfiles exist and use the correct one.
 
             ## Issue Details
             - **Number**: #${{ steps.issue.outputs.number }}
