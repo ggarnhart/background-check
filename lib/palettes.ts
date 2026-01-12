@@ -104,6 +104,12 @@ export function getCustomPalette(): ColorPalette | undefined {
 export function saveCustomPalette(colors: string[]): void {
   if (typeof window === 'undefined') return;
 
+  // Enforce minimum of 3 colors
+  if (colors.length < 3) {
+    console.warn('Custom palette must have at least 3 colors');
+    return;
+  }
+
   try {
     localStorage.setItem(CUSTOM_PALETTE_KEY, JSON.stringify(colors));
   } catch (error) {

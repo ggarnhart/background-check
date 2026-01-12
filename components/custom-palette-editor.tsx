@@ -50,7 +50,7 @@ export function CustomPaletteEditor({ onSave, onClose }: CustomPaletteEditorProp
   };
 
   const handleSave = () => {
-    if (colors.length > 0) {
+    if (colors.length >= 3) {
       saveCustomPalette(colors);
       onSave();
     }
@@ -74,6 +74,7 @@ export function CustomPaletteEditor({ onSave, onClose }: CustomPaletteEditorProp
 
         <p className="mb-4 text-sm text-muted-foreground">
           Add your own colors to create a custom palette. Colors are saved in your browser.
+          <strong className="block mt-1">Minimum of 3 colors required.</strong>
         </p>
 
         <div className="mb-4 space-y-2">
@@ -120,7 +121,7 @@ export function CustomPaletteEditor({ onSave, onClose }: CustomPaletteEditorProp
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={handleSave} className="flex-1" disabled={colors.length === 0}>
+          <Button onClick={handleSave} className="flex-1" disabled={colors.length < 3}>
             Save Palette
           </Button>
           {colors.length > 0 && (
