@@ -35,18 +35,27 @@ export function CustomPaletteEditor({ onSave, onClose }: CustomPaletteEditorProp
 
   const addColor = () => {
     if (newColor && !colors.includes(newColor)) {
-      setColors([...colors, newColor]);
+      const newColors = [...colors, newColor];
+      setColors(newColors);
+      saveCustomPalette(newColors);
     }
   };
 
   const removeColor = (index: number) => {
-    setColors(colors.filter((_, i) => i !== index));
+    const newColors = colors.filter((_, i) => i !== index);
+    setColors(newColors);
+    if (newColors.length > 0) {
+      saveCustomPalette(newColors);
+    } else {
+      deleteCustomPalette();
+    }
   };
 
   const updateColor = (index: number, value: string) => {
     const newColors = [...colors];
     newColors[index] = value;
     setColors(newColors);
+    saveCustomPalette(newColors);
   };
 
   const handleSave = () => {
