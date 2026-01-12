@@ -108,6 +108,7 @@ jobs:
             - Follow the existing code style and conventions in the repository
             - Write clean, maintainable code
             - If you're unsure about something, ask in the issue comments rather than making assumptions
+            - Though reading data is fine, do not, under any circumstances, enact data deletion or modification.
 
             ## Issue Details
             - **Number**: #${{ steps.issue.outputs.number }}
