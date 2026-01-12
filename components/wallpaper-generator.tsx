@@ -9,6 +9,7 @@ import { TemplateSelector } from "@/components/template-selector";
 import { WallpaperCanvas, type WallpaperCanvasHandle } from "@/components/wallpaper-canvas";
 import { PaperCanvas, type PaperCanvasHandle } from "@/components/paper-canvas";
 import { WaveSettings, defaultWaveSettings } from "@/components/wave-settings";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { palettes, getPaletteById } from "@/lib/palettes";
 import { templates, getTemplateById, isP5Template, isPaperTemplate } from "@/lib/templates";
 import type { P5Template, PaperTemplate, WaveSettings as WaveSettingsType } from "@/lib/templates";
@@ -40,6 +41,9 @@ export function WallpaperGenerator() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-8 p-8">
+      <div className="fixed right-4 top-4 z-50">
+        <ThemeToggle />
+      </div>
       <div className="flex flex-col items-center gap-2">
         <h1 className="text-2xl font-semibold tracking-tight">Background Check</h1>
         <p className="text-muted-foreground text-sm">Generate 4K wallpapers from color palettes</p>
