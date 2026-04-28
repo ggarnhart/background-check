@@ -48,6 +48,39 @@ export function drawRotatedStripes(
   g.pop();
 }
 
+/**
+ * Draw rightward-facing chevron stripes (`>`).
+ *
+ * The canvas is split at the horizontal midline. The top half is filled with
+ * tl-br rotated stripes and the bottom half with bl-tr rotated stripes. With
+ * the natural canvas-diagonal angle used by `drawRotatedStripes`, each stripe's
+ * centerline meets at the same x on the midline, so the two halves form a
+ * crisp chevron point on the right edge.
+ */
+export function drawRightwardChevronStripes(
+  g: p5.Graphics,
+  stripes: { color: string; size: number }[]
+) {
+  const w = g.width;
+  const h = g.height;
+  const halfH = h / 2;
+  const ctx = g.drawingContext as CanvasRenderingContext2D;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, w, halfH);
+  ctx.clip();
+  drawRotatedStripes(g, stripes, "tl-br");
+  ctx.restore();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, halfH, w, halfH);
+  ctx.clip();
+  drawRotatedStripes(g, stripes, "bl-tr");
+  ctx.restore();
+}
+
 // Estimate perceived lightness from hex color (0-1)
 export function getLightness(hex: string): number {
   const r = parseInt(hex.slice(1, 3), 16);

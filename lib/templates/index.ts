@@ -3,6 +3,7 @@ export { isP5Template, isPaperTemplate } from "./types";
 
 import { retroStripes } from "./retro-stripes";
 import { retroLines } from "./retro-lines";
+import { chevronStripes } from "./chevron-stripes";
 import { equalStripes } from "./equal-stripes";
 import { verticalStripes } from "./vertical-stripes";
 import { flowingWaves } from "./flowing-waves";
@@ -14,6 +15,7 @@ export const templates = [
   flowingWaves,      // p5.js version
   retroLines,
   retroStripes,
+  chevronStripes,
   verticalStripes,
   equalStripes,
   circleGrid,
