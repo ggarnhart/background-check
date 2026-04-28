@@ -9,6 +9,7 @@ import { verticalStripes } from "./vertical-stripes";
 import { flowingWaves } from "./flowing-waves";
 import { flowingWavesPaper } from "./flowing-waves-paper";
 import { circleGrid } from "./circle-grid";
+import { overlappingCircles } from "./overlapping-circles";
 
 export const templates = [
   flowingWavesPaper, // Paper.js version (smoother)
@@ -19,6 +20,7 @@ export const templates = [
   verticalStripes,
   equalStripes,
   circleGrid,
+  overlappingCircles,
 ];
 
 export function getTemplateById(id: string) {
