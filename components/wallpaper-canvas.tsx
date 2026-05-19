@@ -3,9 +3,10 @@
 import { useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from "react";
 import type p5Type from "p5";
 import type { P5Template } from "@/lib/templates";
+import { downloadCanvas } from "@/lib/download-canvas";
 
 export interface WallpaperCanvasHandle {
-  downloadImage: () => void;
+  downloadImage: (rotation: number) => void;
 }
 
 interface WallpaperCanvasProps {
@@ -91,13 +92,12 @@ export const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, WallpaperCanvas
       draw();
     }, [draw]);
 
-    const downloadImage = useCallback(() => {
-      const p5 = p5Ref.current;
+    const downloadImage = useCallback((rotation: number) => {
       const graphics = graphicsRef.current;
-      if (!p5 || !graphics) return;
+      if (!graphics) return;
 
-      // Save the graphics buffer using p5's save method
-      p5.save(graphics, `wallpaper-${template.id}-${Date.now()}.png`);
+      const sourceCanvas = (graphics as unknown as { canvas: HTMLCanvasElement }).canvas;
+      downloadCanvas(sourceCanvas, rotation, `wallpaper-${template.id}-${Date.now()}.png`);
     }, [template.id]);
 
     useImperativeHandle(ref, () => ({

@@ -2,9 +2,10 @@
 
 import { useRef, useEffect, useCallback, forwardRef, useImperativeHandle, useState } from "react";
 import type { PaperTemplate, WaveSettings } from "@/lib/templates";
+import { downloadCanvas } from "@/lib/download-canvas";
 
 export interface PaperCanvasHandle {
-  downloadImage: () => void;
+  downloadImage: (rotation: number) => void;
 }
 
 interface PaperCanvasProps {
@@ -49,14 +50,11 @@ export const PaperCanvas = forwardRef<PaperCanvasHandle, PaperCanvasProps>(
       draw();
     }, [draw]);
 
-    const downloadImage = useCallback(() => {
+    const downloadImage = useCallback((rotation: number) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
-      const link = document.createElement("a");
-      link.download = `wallpaper-${template.id}-${Date.now()}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
+      downloadCanvas(canvas, rotation, `wallpaper-${template.id}-${Date.now()}.png`);
     }, [template.id]);
 
     useImperativeHandle(ref, () => ({

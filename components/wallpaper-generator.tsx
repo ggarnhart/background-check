@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Download, MessageCirclePlus } from "lucide-react";
+import { Download, MessageCirclePlus, RotateCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PaletteSelector } from "@/components/palette-selector";
@@ -19,6 +19,7 @@ export function WallpaperGenerator() {
   const [selectedPaletteId, setSelectedPaletteId] = useState(palettes[0].id);
   const [selectedTemplateId, setSelectedTemplateId] = useState(templates[0].id);
   const [waveSettings, setWaveSettings] = useState<WaveSettingsType>(defaultWaveSettings);
+  const [rotation, setRotation] = useState(0);
   const p5CanvasRef = useRef<WallpaperCanvasHandle>(null);
   const paperCanvasRef = useRef<PaperCanvasHandle>(null);
 
@@ -31,13 +32,17 @@ export function WallpaperGenerator() {
 
   const handleDownload = () => {
     if (selectedTemplate && isP5Template(selectedTemplate)) {
-      p5CanvasRef.current?.downloadImage();
+      p5CanvasRef.current?.downloadImage(rotation);
     } else {
-      paperCanvasRef.current?.downloadImage();
+      paperCanvasRef.current?.downloadImage(rotation);
     }
   };
 
+  const handleRotate = () => setRotation((r) => (r + 90) % 360);
+
   if (!selectedTemplate) return null;
+
+  const isPortrait = rotation === 90 || rotation === 270;
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-8 p-8">
@@ -49,21 +54,39 @@ export function WallpaperGenerator() {
         <p className="text-muted-foreground text-sm">Generate 4K wallpapers from color palettes</p>
       </div>
 
-      <div className="w-full max-w-4xl overflow-hidden rounded-xl border shadow-lg">
-        {isP5Template(selectedTemplate) ? (
-          <WallpaperCanvas
-            ref={p5CanvasRef}
-            colors={colors}
-            template={selectedTemplate as P5Template}
-          />
-        ) : isPaperTemplate(selectedTemplate) ? (
-          <PaperCanvas
-            ref={paperCanvasRef}
-            colors={colors}
-            template={selectedTemplate as PaperTemplate}
-            waveSettings={waveSettings}
-          />
-        ) : null}
+      <div
+        className={`relative overflow-hidden rounded-xl border shadow-lg ${
+          isPortrait ? "h-[80vh] max-h-[720px]" : "w-full max-w-4xl"
+        }`}
+        style={{
+          aspectRatio: isPortrait ? "9 / 16" : "16 / 9",
+        }}
+      >
+        <div
+          className="absolute left-1/2 top-1/2"
+          style={{
+            width: isPortrait ? `${(16 / 9) * 100}%` : "100%",
+            height: isPortrait ? `${(9 / 16) * 100}%` : "100%",
+            transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+            transformOrigin: "center center",
+            transition: "transform 250ms ease-out",
+          }}
+        >
+          {isP5Template(selectedTemplate) ? (
+            <WallpaperCanvas
+              ref={p5CanvasRef}
+              colors={colors}
+              template={selectedTemplate as P5Template}
+            />
+          ) : isPaperTemplate(selectedTemplate) ? (
+            <PaperCanvas
+              ref={paperCanvasRef}
+              colors={colors}
+              template={selectedTemplate as PaperTemplate}
+              waveSettings={waveSettings}
+            />
+          ) : null}
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-4">
@@ -75,6 +98,10 @@ export function WallpaperGenerator() {
           value={selectedPaletteId}
           onValueChange={setSelectedPaletteId}
         />
+        <Button onClick={handleRotate} size="lg" variant="outline">
+          <RotateCw className="mr-2 h-4 w-4" />
+          Rotate 90&deg;
+        </Button>
         <Button onClick={handleDownload} size="lg">
           <Download className="mr-2 h-4 w-4" />
           Download 4K
